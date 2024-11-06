@@ -15,7 +15,6 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from tools.stats.upload_metrics import add_global_metric, emit_metric, global_metrics
 from tools.stats.upload_stats_lib import (
-    BATCH_SIZE,
     get_s3_resource,
     remove_nan_inf,
 )
