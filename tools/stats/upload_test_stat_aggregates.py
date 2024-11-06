@@ -67,7 +67,7 @@ def get_test_stat_aggregates(date: datetime.date) -> Any:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Upload test stat aggregates to Rockset."
+        description="Upload test stat aggregates to s3"
     )
     parser.add_argument(
         "--date",
