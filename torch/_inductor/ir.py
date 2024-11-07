@@ -6791,15 +6791,20 @@ class InvokeSubgraph(ExternKernel):
         # strides as that of subgraph inputs.
         operands = [cls.realize_input(x) for x in operands]
 
+<<<<<<< HEAD
         def handle_sym_expr(stride):  # type: ignore[no-untyped-def]
             return [s.node.expr if isinstance(s, torch.SymInt) else s for s in stride]
+=======
+        # def handle_sym_expr(stride):
+        #     return [s.node.expr if isinstance(s, torch.SymInt) else s for s in stride]
+>>>>>>> 3344412e1b4 ([dont review][dont merge] All fixes to make TorchTune work)
 
-        fake_strides = [fake_operand.stride() for fake_operand in fake_operands]
-        fake_strides = [handle_sym_expr(stride) for stride in fake_strides]
-        operands = [
-            cls.require_exact_strides(x, fake_strides[idx])
-            for idx, x in enumerate(operands)
-        ]
+        # fake_strides = [fake_operand.stride() for fake_operand in fake_operands]
+        # fake_strides = [handle_sym_expr(stride) for stride in fake_strides]
+        # operands = [
+        #     cls.require_exact_strides(x, fake_strides[idx])
+        #     for idx, x in enumerate(operands)
+        # ]
 
         if subgraph.graph is None:
             # create and lower subgraphs
@@ -6811,9 +6816,11 @@ class InvokeSubgraph(ExternKernel):
             with V.set_graph_handler(subgraph.graph):
                 subgraph.graph.run(*fake_operands)
 
-        outputs = subgraph.graph.graph_outputs
-        device = operands[0].get_device()
-        dtype = operands[0].get_dtype()
+        # for o in operands:
+        #     print(o, type(o))
+        outputs = subgraph.graph.graph_outputs  # type: ignore[union-attr]
+        device = operands[-1].get_device()
+        dtype = operands[-1].get_dtype()
 
         invoke_subgraph = InvokeSubgraph(
             subgraph=subgraph,
@@ -6822,7 +6829,7 @@ class InvokeSubgraph(ExternKernel):
         )
 
         def create_layout(output):
-            if isinstance(output, NoneAsConstantBuffer):
+            if isinstance(output, (NoneAsConstantBuffer, ShapeAsConstantBuffer)):
                 # Send a dummy layout
                 return FixedLayout(
                     device=device,
