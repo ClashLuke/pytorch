@@ -768,6 +768,14 @@ def has_free_symbols(val: IterateExprs) -> bool:
     return not all(e.is_number for e in _iterate_exprs(val))
 
 
+def has_free_unbacked_symbols(x: IterateExprs) -> bool:
+    """Faster version of bool(free_unbacked_symbols(val))"""
+    for s in free_symbols(x):
+        if symbol_is_type(s, (SymT.UNBACKED_INT, SymT.UNBACKED_FLOAT)):
+            return True
+    return False
+
+
 # Like free_symbols, but filtered to only report unbacked symbols
 def free_unbacked_symbols(x: IterateExprs) -> OrderedSet[sympy.Symbol]:
     # NB: keep synced with is_unbacked_symint
