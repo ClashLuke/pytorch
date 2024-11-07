@@ -40,7 +40,7 @@ from torch.testing._internal.common_utils import (  # type: ignore[attr-defined]
     IS_SANDCASTLE, IS_FBCODE, IS_REMOTE_GPU, skipIfTorchInductor, load_tests, slowTest, slowTestIf,
     TEST_WITH_CROSSREF, skipIfTorchDynamo, skipRocmIfTorchInductor, set_default_dtype,
     skipCUDAMemoryLeakCheckIf, BytesIOContext,
-    skipIfRocm, skipIfNoSciPy, TemporaryFileName, TemporaryDirectoryName,
+    skipCUDAIfNotRocm, skipIfRocm, skipIfNoSciPy, TemporaryFileName, TemporaryDirectoryName,
     wrapDeterministicFlagAPITest, DeterministicGuard, CudaSyncGuard,
     bytes_to_scalar, parametrize, skipIfMps, noncontiguous_like,
     AlwaysWarnTypedStorageRemoval, TEST_WITH_TORCHDYNAMO, xfailIfTorchDynamo)
@@ -4438,6 +4438,7 @@ else:
             ind.index_add_(0, ind.clone(), ind)
 
     @onlyCUDA
+    @skipCUDAIfNotRocm  # This UT throws an OOM error on CUDA
     def test_index_add_large_inputs(self, device):
         D = 6144
         x = torch.zeros([16384, D], device=device, dtype=torch.bfloat16)
@@ -4445,17 +4446,16 @@ else:
         output = torch.ones([1, 32, 16384, D], device=device, dtype=torch.bfloat16)  # Use random values for test
 
         x_before = x.clone()
-        #Manually update x_before to generate expected values
-        for batch in range(output.shape[1]): #Loop over batch size (32 in this case)
-            for idx in range(output.shape[2]): #Loop over index
+        # Manually update x_before to generate expected values
+        for batch in range(output.shape[1]):  # Loop over batch size (32 in this case)
+            for idx in range(output.shape[2]):  # Loop over index
                 idx_val = index[0, batch, idx].item()
                 x_before[idx_val] += output[0, batch, idx]
 
-        #Run index_add to get actual values
+        # Run index_add to get actual values
         x.index_add_(0, index.view(-1), output.view(-1, D))
 
         self.assertEqual(x_before, x)
-
 
     # FIXME: convert to ErrorInputs
     # (but have to extend ErrorInputs to handle inplace-only errors!)
